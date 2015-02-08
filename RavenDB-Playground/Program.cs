@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Linq;
+using Raven.Abstractions.Indexing;
 using Raven.Client;
 using Raven.Client.Document;
+using Raven.Client.Indexes;
+using Raven.Json.Linq;
 
 namespace RavenDB_Playground
 {
-    public class EventsTime
+    public class EventsTimeResults
     {
         public DateTime When { get; set; }
 
@@ -26,17 +30,39 @@ namespace RavenDB_Playground
 
                 store.Initialize();
 
-                using (var session = store.OpenSession())
-                {
-                    var query = session.Query<EventsTime>("EventsTime")
-                        .AggregateBy("WhenDate", "Period")
-                        .CountOn(x => x.When)
-                        .AndAggregateOn("EventName")
-                        .CountOn(x => x.When);
+             
+                DynamicAggregation(store);
 
-                    var results = query.ToList();
-                }
+                //TranformerResults(store);
+            }
+        }
 
+        private static void TranformerResults(IDocumentStore store)
+        {
+            using (var session = store.OpenSession())
+            {
+                
+
+                var query = session.Query<EventsTime>("EventsTime")
+                    
+                    //.ProjectFromIndexFieldsInto<EventsTime>()
+                    .TransformWith<RavenJObject>("EventsGroupByDay");
+
+                var results = query.ToList();
+            }
+        }
+
+        public static void DynamicAggregation(IDocumentStore store)
+        {
+            using (var session = store.OpenSession())
+            {
+                var query = session.Query<EventsTimeResults>("EventsTime")
+                    .ProjectFromIndexFieldsInto<EventsTimeResults>()
+                    .Where(x => x.EventName != "applicationprobed")
+                    .AggregateBy("Grouping", "EventsByNameAndDate")
+                    .CountOn(x => x.WhenDate);                  
+
+                var results = query.ToList();
             }
         }
     }
