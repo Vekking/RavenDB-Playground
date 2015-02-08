@@ -1,13 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using Raven.Abstractions.Linq;
 using Raven.Client;
 using Raven.Client.Document;
-using Raven.Json.Linq;
 
 namespace RavenDB_Playground
 {
@@ -22,7 +15,7 @@ namespace RavenDB_Playground
         public int Count { get; set; }
     }
 
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
